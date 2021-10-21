@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using EZCameraShake;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class GameManager : MonoBehaviour
 {
@@ -33,9 +34,10 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
 
-            if (lives<=0 && Input.anyKeyDown && pacman.isAcceptingInput)
+        if (lives<=0 && Input.anyKeyDown && pacman.isAcceptingInput)
         {
-            NewGame();
+            //NewGame();
+            ChangeOverScene();
         }
         if(!_behaviourChanged && curPellets <= numberOfPelletToChangeBlinky)
         {
@@ -210,5 +212,9 @@ public class GameManager : MonoBehaviour
         Time.fixedDeltaTime = defaultFixedDeltaTime;
     }
 
-
+    //Change GameOver when over
+    public void ChangeOverScene()
+    {
+        SceneManager.LoadScene("GAMEOVER_LV1");
+    }    
 }

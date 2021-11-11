@@ -11,7 +11,7 @@ public class GameManager : MonoBehaviour
     public Pacman pacman;
     public Transform pellets;
     public int numberOfPelletToChangeBlinky = 20;
-
+    public Animator fadeAnimator;
     public int curPellets = 244;
     public Text scoreText;
     public GameObject[] pacmanLivesUI;
@@ -34,11 +34,11 @@ public class GameManager : MonoBehaviour
     private void Update()
     {
 
-        if (lives<=0 && Input.anyKeyDown && pacman.isAcceptingInput)
+/*        if (lives<=0 && Input.anyKeyDown && pacman.isAcceptingInput)
         {
             //NewGame();
             ChangeOverScene();
-        }
+        }*/
         if(!_behaviourChanged && curPellets <= numberOfPelletToChangeBlinky)
         {
             ChangeBlinky(true);
@@ -64,7 +64,7 @@ public class GameManager : MonoBehaviour
         }
         ResetState();
     }
-
+    
     private void ResetState()
     {
         ResetGhostMultiplier();
@@ -111,11 +111,18 @@ public class GameManager : MonoBehaviour
     }
     private void GameOver()
     {
-        for (int i = 0; i < ghosts.Length; i++)
+        /*for (int i = 0; i < ghosts.Length; i++)
         {
             ghosts[i].gameObject.SetActive(false);
         }
-        pacman.gameObject.SetActive(false);
+        pacman.gameObject.SetActive(false);*/
+        StartCoroutine(SlowMotionSequence());
+        Invoke(nameof(FadeIn), 2f);
+        Invoke(nameof(ChangeOverScene), 3f);
+    }
+    private void FadeIn()
+    {
+        fadeAnimator.SetTrigger("In");
     }
 
     public void GhostEaten(Ghost ghost)

@@ -143,7 +143,7 @@ public class GhostFrightened : GhostBehaviour
     private IEnumerator ExitTransition()
     {
         ghost.movement.SetDirection(Vector2.down, true);
-        ghost.movement.rigidbody2D.isKinematic = true;
+        ghost.movement.rgbody.isKinematic = true;
         ghost.movement.enabled = false;
 
         Vector3 position = transform.position;
@@ -158,7 +158,7 @@ public class GhostFrightened : GhostBehaviour
             elapsed += Time.deltaTime;
             yield return null;
         }
-        ghost.movement.rigidbody2D.isKinematic = false;
+        ghost.movement.rgbody.isKinematic = false;
         ghost.movement.enabled = true;
         if(GameObject.FindGameObjectWithTag("Player"))
             Physics2D.IgnoreCollision(gameObject.GetComponent<CircleCollider2D>(), GameObject.FindWithTag("Player").GetComponent<CircleCollider2D>(),false);

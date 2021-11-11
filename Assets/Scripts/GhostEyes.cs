@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+
 public class GhostEyes : MonoBehaviour
 {
     public Sprite up;
@@ -25,13 +26,17 @@ public class GhostEyes : MonoBehaviour
         else
         {
             if (movement.direction == Vector2.up)
-                spriteRenderer.sprite = up;
+                ChangeSprite(up);
             else if (movement.direction == Vector2.down)
-                spriteRenderer.sprite = down;
+                ChangeSprite(down);
             else if (movement.direction == Vector2.left)
-                spriteRenderer.sprite = left;
+                ChangeSprite(left);
             else
-                spriteRenderer.sprite = right;
+                ChangeSprite(right);
         }
+    }
+    void ChangeSprite(Sprite sprite)
+    {
+        spriteRenderer.sprite = sprite;
     }
 }

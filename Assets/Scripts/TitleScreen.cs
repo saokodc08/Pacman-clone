@@ -5,18 +5,30 @@ using UnityEngine.SceneManagement;
 
 public class TitleScreen : MonoBehaviour
 {
-    public GameObject animator;
+    public Animator animator;
     
     public void StartGame()
     {
-        animator.SetActive(true);
-        animator.GetComponent<Animator>().SetTrigger("In");
-        Invoke(nameof(LoadScene), 0.5f);
+        //animator.SetActive(true);
+        animator.SetTrigger("In");
+        Invoke(nameof(LoadScene), 1f);
     }
 
     private void LoadScene()
     {
         SceneManager.LoadScene(1);
+
+    }
+
+    public void LoadMultiplayerScene()
+    {
+        animator.SetTrigger("In");
+        Invoke(nameof(LoadSceneMul), 1f);
+    }
+
+    private void LoadSceneMul()
+    {
+        SceneManager.LoadScene("Room");
 
     }
 }

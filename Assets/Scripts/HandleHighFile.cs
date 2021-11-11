@@ -23,7 +23,7 @@ public class HandleHightFile
         Debug.Log(asset.text);
     }*/
 
-    [MenuItem("Tools/Read file")]
+    /*[MenuItem("Tools/Read file")]
     public static string ReadString()
     {
         string path = "Assets/Resources/HighScore.txt";
@@ -32,6 +32,6 @@ public class HandleHightFile
         string highScore = reader.ReadToEnd();
         reader.Close();
         return highScore;
-    }
+    }*/
 
 }

@@ -17,7 +17,6 @@ public class TitleScreen : MonoBehaviour
     private void LoadScene()
     {
         SceneManager.LoadScene(1);
-
     }
 
     public void LoadMultiplayerScene()
@@ -28,7 +27,7 @@ public class TitleScreen : MonoBehaviour
 
     private void LoadSceneMul()
     {
-        SceneManager.LoadScene("Room");
+        SceneManager.LoadScene(2);
 
     }
 }

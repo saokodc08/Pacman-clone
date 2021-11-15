@@ -10,9 +10,13 @@ public class GhostFrightened : GhostBehaviour
     public SpriteRenderer blue;
     public SpriteRenderer white;
 
+    public AudioClip ghostScaredSound;
+    public AudioClip eyesSound;
+
     //private Vector2 prevDir;
 
     public bool eaten { get; private set; }
+
     public override void Enable(float duration)
     {
         base.Enable(duration);

@@ -18,6 +18,9 @@ EditorBuildSettings:
     path: Assets/Scenes/MP.unity
     guid: 202f62a3047696c42b76783310f87326
   - enabled: 1
+    path: Assets/Scenes/Room.unity
+    guid: 60d63fb3cf857c14e8663660a82837e6
+  - enabled: 1
     path: Assets/Scenes/GAMEOVER_LV1.unity
     guid: fbd281e4498f21347942f0df4d5230bf
   m_configObjects: {}

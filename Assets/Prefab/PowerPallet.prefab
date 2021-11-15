@@ -124,3 +124,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   points: 50
   duration: 8
+  ghostScaredSound: {fileID: 8300000, guid: cd55836cad18b3f4091ed08865fc58b6, type: 3}

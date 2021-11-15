@@ -24,8 +24,23 @@ public class GameManager : MonoBehaviour
     public int score { get; private set; }
     public int lives { get; private set; }
 
+    //Sound
+    public AudioClip beginningSound;
+    public AudioClip chompSound;
+    public AudioClip eatFruitSound;
+    public AudioClip eatGhostSound;
+    public AudioClip deathSound;
+    public AudioClip alertSound;
+    public AudioClip ghostScareSound;
+    public AudioClip ghotEyeSound;
+
     private void Start()
     {
+        //Sound Beginning
+        SoundManager.Instance.Play(beginningSound);
+        //Sound Alert
+        InvokeRepeating(nameof(AlertSound), 4, 1.6f);
+
         CameraShaker.Instance.ShakeOnce(2f, 2f, 2f, 3f);
         Invoke(nameof(NewGame), 3f);
     }
@@ -127,6 +142,9 @@ public class GameManager : MonoBehaviour
 
     public void GhostEaten(Ghost ghost)
     {
+        //Eat Ghost Sound
+        SoundManager.Instance.Play(eatGhostSound);
+
         StartCoroutine(SlowMotionSequence());
         CameraShaker.Instance.ShakeOnce(2f, 2f, 0.1f, 1f);
         int newPoints = ghost.points * ghostMultiplier;
@@ -142,9 +160,25 @@ public class GameManager : MonoBehaviour
     {
         pacman.PacmanDied();
         SetLives(lives - 1);
-        if(lives >0)
+
+        //Sound
+        CancelInvoke(nameof(GhostScaredSound));
+
+        //Sound Alert
+        CancelInvoke(nameof(AlertSound));
+
+        //Pacman died Sound
+        SoundManager.Instance.Play(deathSound);
+
+        if (lives >0)
         {
             Invoke("ResetState",3f);
+
+            if (lives < 3)
+            {
+                //Sound Alert
+                InvokeRepeating(nameof(AlertSound), 1f, 1.6f);
+            }
         }
         else
         {
@@ -156,6 +190,10 @@ public class GameManager : MonoBehaviour
     public void PalletEaten(Pallet pallet)
     {
         pallet.gameObject.SetActive(false);
+
+        //Eat Pallets Sound
+        SoundManager.Instance.Play(chompSound);
+
         curPellets--;
         SetScore(score + pallet.points);
         if(!HasRemainingPallets())
@@ -164,12 +202,13 @@ public class GameManager : MonoBehaviour
             CameraShaker.Instance.ShakeOnce(3f, 3f, 0.1f, 1f);
             pacman.PacmanWin();
             pacman.gameObject.SetActive(false);
-            Invoke(nameof(NewGame), 3.0f);
+            Invoke(nameof(NewGame), 4.0f);
         }
     }
 
     public void PowerPalletEaten(PowerPallet pallet)
     {
+
         for (int i = 0; i < ghosts.Length; i++)
         {
             if(!ghosts[i].frightened.eaten)
@@ -179,6 +218,11 @@ public class GameManager : MonoBehaviour
         pacman.PowerPalletEatenFX();
         CameraShaker.Instance.ShakeOnce(1f, 1f, 0.1f, 0.5f);
         CancelInvoke();
+
+        //Sound
+        InvokeRepeating(nameof(GhostScaredSound), 0, 2f);
+        InvokeRepeating(nameof(AlertSound), 0f, 1.6f);
+
         Invoke(nameof(ResetGhostMultiplier),pallet.duration);
     }
 
@@ -196,6 +240,7 @@ public class GameManager : MonoBehaviour
     private void ResetGhostMultiplier()
     {
         ghostMultiplier = 1;
+        CancelInvoke(nameof(GhostScaredSound));
     }
 
     public void ChangeBlinky(bool change)
@@ -223,5 +268,15 @@ public class GameManager : MonoBehaviour
     public void ChangeOverScene()
     {
         SceneManager.LoadScene("GAMEOVER_LV1");
-    }    
+    }
+
+    public void AlertSound()
+    {
+        SoundManager.Instance.Play(alertSound);
+    }
+
+    public void GhostScaredSound()
+    {
+        SoundManager.Instance.Play(ghostScareSound);
+    }
 }

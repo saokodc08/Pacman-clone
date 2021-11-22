@@ -18,11 +18,13 @@ public class SpawnPlayer : MonoBehaviour
         {
             GameObject playerToSpawn = pacmanPrefab;
             PhotonNetwork.Instantiate(playerToSpawn.name, pacPos, Quaternion.identity);
+            gameManager.isPacman = true;
         }
         else
         {
             GameObject playerToSpawn = ghostPrefab;
             PhotonNetwork.Instantiate(ghostPrefab.name, ghostPos, Quaternion.identity);
+            gameManager.isPacman = false;
         }
 
     }

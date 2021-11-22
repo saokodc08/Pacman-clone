@@ -4,8 +4,10 @@ using UnityEngine;
 using EZCameraShake;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using Photon.Pun;
+using Photon.Realtime;
 
-public class GameManager_MP : MonoBehaviour
+public class GameManager_MP : MonoBehaviourPunCallbacks
 {
     public Ghost_MP ghost;
     public Pacman_MP pacman;
@@ -14,16 +16,25 @@ public class GameManager_MP : MonoBehaviour
     public int curPellets = 244;
     public Text scoreText;
     public GameObject[] pacmanLivesUI;
-    public Text ghostEatenScore;
-    [SerializeField] private GameObject ghostEatenScoreGameobject;
+    public GameObject playerLeftBox;
+    public Text leftText;
     public float slowMotionScale = 0.25f;
-    private int ghostMultiplier = 1;
     private float defaultFixedDeltaTime = 0.02f;
+    public float ghostFrightenedTime = 10f;
     public int score { get; private set; }
     public int lives { get; private set; }
 
+    public bool isPacman = false;
+    public GameObject PauseMenu;
+
+    private bool isPaused = false;
+    private bool confirmQuit = false;
+    [SerializeField] GameObject confirmBox;
+    public Result result;
+
     private void Start()
     {
+        result = Result.instance;
         //CameraShaker.Instance.ShakeOnce(2f, 2f, 2f, 3f);
         //Invoke(nameof(NewGame), 3f);
         NewGame();
@@ -32,17 +43,14 @@ public class GameManager_MP : MonoBehaviour
 
     private void Update()
     {
-
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            PauseGame();
+        }
     }
 
-    private void SetPlayer()
-    {
-        pacman = GameObject.FindGameObjectWithTag("Player").GetComponent<Pacman_MP>();
-        ghost = GameObject.FindGameObjectWithTag("Player_1").GetComponent<Ghost_MP>();
-    }
     private void NewGame()
     {
-        //SetPlayer();
         curPellets = 244;
         SetScore(0);
         SetLives(3);
@@ -61,6 +69,7 @@ public class GameManager_MP : MonoBehaviour
     private void ResetState()
     {
         pacman.ResetState();
+        ghost.ResetState();
     }
 
     private void SetScore(int score)
@@ -99,11 +108,6 @@ public class GameManager_MP : MonoBehaviour
     }
     private void GameOver()
     {
-        /*for (int i = 0; i < ghosts.Length; i++)
-        {
-            ghosts[i].gameObject.SetActive(false);
-        }
-        pacman.gameObject.SetActive(false);*/
         StartCoroutine(SlowMotionSequence());
         Invoke(nameof(FadeIn), 2f);
         Invoke(nameof(ChangeOverScene), 3f);
@@ -113,18 +117,11 @@ public class GameManager_MP : MonoBehaviour
         fadeAnimator.SetTrigger("In");
     }
 
-    public void GhostEaten(Ghost ghost)
+    public void GhostEaten()
     {
         StartCoroutine(SlowMotionSequence());
         CameraShaker.Instance.ShakeOnce(2f, 2f, 0.1f, 1f);
-        int newPoints = ghost.points * ghostMultiplier;
-        ghostEatenScore.text = newPoints+"";
-        ghostEatenScoreGameobject.SetActive(true);
-        SetScore(score + newPoints);
-        ghostMultiplier++;    
     }
-
-
 
     public void PacmanEaten()
     {
@@ -132,10 +129,11 @@ public class GameManager_MP : MonoBehaviour
         SetLives(lives - 1);
         if(lives >0)
         {
-            Invoke("ResetState",3f);
+            Invoke(nameof(ResetState),3f);
         }
         else
         {
+            result.ghostWins = true;
             GameOver();
         }
         CameraShaker.Instance.ShakeOnce(6f, 6f, 0.1f, 1f);
@@ -148,17 +146,18 @@ public class GameManager_MP : MonoBehaviour
         SetScore(score + pallet.points);
         if(!HasRemainingPallets())
         {
-            StartCoroutine(SlowMotionSequence());
-            CameraShaker.Instance.ShakeOnce(3f, 3f, 0.1f, 1f);
             pacman.PacmanWin();
             pacman.gameObject.SetActive(false);
-            Invoke(nameof(NewGame), 3.0f);
+            result.ghostWins = false;
+            CameraShaker.Instance.ShakeOnce(3f, 3f, 0.1f, 1f);
+            GameOver();
         }
     }
 
     public void PowerPalletEaten(PowerPallet_MP pallet)
     {
-
+        if(!ghost.isEaten)
+            ghost.GhostFrightened(ghostFrightenedTime);
         PalletEaten(pallet);
         pacman.PowerPalletEatenFX();
         CameraShaker.Instance.ShakeOnce(1f, 1f, 0.1f, 0.5f);
@@ -176,11 +175,33 @@ public class GameManager_MP : MonoBehaviour
         return false;
     }
 
+    public void PauseGame()
+    {
+        if (!isPaused)
+        {
+            isPaused = true;
+            pacman.isAcceptingInput = false;
+            ghost.isAcceptingInput = false;
+            PauseMenu.SetActive(true);
+            //Time.timeScale = 0;
+        }
+        else
+        {
+            confirmBox.SetActive(false);
+            confirmQuit = false;
+            isPaused = false;
+            pacman.isAcceptingInput = true;
+            ghost.isAcceptingInput = true;
+            PauseMenu.SetActive(false);
+            //Time.timeScale = 1;
+        }
+    }
+
     public IEnumerator SlowMotionSequence()
     {
         Time.timeScale = slowMotionScale;
         Time.fixedDeltaTime = defaultFixedDeltaTime * Time.timeScale;
-        yield return new WaitForSecondsRealtime(1);
+        yield return new WaitForSeconds(0.25f);
         Time.timeScale = 1;
         Time.fixedDeltaTime = defaultFixedDeltaTime;
     }
@@ -188,6 +209,48 @@ public class GameManager_MP : MonoBehaviour
     //Change GameOver when over
     public void ChangeOverScene()
     {
-        SceneManager.LoadScene("GAMEOVER_LV1");
-    }    
+        PhotonNetwork.LoadLevel("GAMEOVER_MP");
+    }
+
+    public void QuitGame()
+    {
+        if(confirmQuit)
+        {
+            FadeIn();
+            PhotonNetwork.Disconnect();
+        }
+        else
+        {
+            confirmQuit = true;
+            confirmBox.SetActive(true);
+        }
+
+    }
+    public void QuitGame2()
+    {
+        FadeIn();
+        PhotonNetwork.Disconnect();
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        PauseMenu.SetActive(false);
+        playerLeftBox.SetActive(true);
+        leftText.text = otherPlayer.NickName + " LEFT THE GAME";
+        if (isPacman)
+            pacman.isAcceptingInput = false;
+        else
+            ghost.isAcceptingInput = false;
+    }
+
+    public override void OnLeftRoom()
+    {
+        PhotonNetwork.Disconnect();
+    }
+
+    public override void OnDisconnected(DisconnectCause cause)
+    {
+        SceneManager.LoadScene("Room");
+    }
+
 }

@@ -4,7 +4,6 @@ using UnityEngine;
 [RequireComponent(typeof(Rigidbody2D))]
 public class Movement : MonoBehaviour
 {
-
     public float speed = 8f;
     public float speedMultipliter = 1f;
     public Vector2 initialDirection;

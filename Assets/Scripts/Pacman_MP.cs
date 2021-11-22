@@ -14,7 +14,12 @@ public class Pacman_MP : MonoBehaviour
     [SerializeField] GameObject powerPalletEatenFX;
     [SerializeField] GameObject pacmanWinFX;
     [SerializeField] GameObject MobileControlPanel;
+    [SerializeField] GameObject pacmanFake;
+    [SerializeField] GameObject arrow;
+    public float fakeDuration;
+    private GameObject fake;
     private bool up, down, left, right = false;
+    [SerializeField] PowerUse power;
 
     private PhotonView view;
 
@@ -29,7 +34,11 @@ public class Pacman_MP : MonoBehaviour
         _spriteRenderer = GetComponent<SpriteRenderer>();
         view = GetComponent<PhotonView>();
         if (view.IsMine)
+        {
             MobileControlPanel.SetActive(true);
+            power.gameObject.SetActive(true);
+
+        }
         GameObject.FindGameObjectWithTag("GameManager").GetComponent<GameManager_MP>().pacman = this;
     }
     private void Update()
@@ -54,16 +63,38 @@ public class Pacman_MP : MonoBehaviour
                 }
                 float angle = Mathf.Atan2(movement.direction.y, movement.direction.x);
                 transform.rotation = Quaternion.AngleAxis(angle * Mathf.Rad2Deg, Vector3.forward);
+            //POWERRRRR
+            if (Input.GetKeyDown(KeyCode.Space))
+                UsePower();          
         }
-        
     }
 
+    public void UsePower()
+    {
+        if (!power.isCoolDown && isAcceptingInput)
+        {
+            power.UsePower();
+            arrow.SetActive(true);
+            fake = PhotonNetwork.Instantiate(pacmanFake.name, transform.position, Quaternion.identity);
+            fake.GetComponent<Movement>().SetDirection(movement.direction);
+            Invoke(nameof(DestroyFake), fakeDuration);
+        }
+    }
+    void DestroyFake()
+    {
+        arrow.SetActive(false);
+        if(fake != null)
+            PhotonNetwork.Destroy(fake);
+    }
     public void ResetState()
     {
         _circleCollider2D.enabled = true;
         _spriteRenderer.enabled = true;
         gameObject.SetActive(true);
         movement.ResetState();
+        power.ResetCooldown();
+        CancelInvoke();
+        DestroyFake();
     }
 
     public void PacmanDied()

@@ -7,6 +7,9 @@ TagManager:
   - Blinky
   - Clyde
   - ClydeTrigger
+  - Player_1
+  - GameManager
+  - Result
   layers:
   - Default
   - TransparentFX
@@ -20,7 +23,7 @@ TagManager:
   - Pacman
   - Ghost
   - Outside
-  - 
+  - FakePacman
   - 
   - 
   - 

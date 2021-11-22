@@ -1,7 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Photon.Pun;
 
 
@@ -13,14 +12,11 @@ public class GhostEyes_MP : MonoBehaviour
     public Sprite left;
     public Sprite right;
     private SpriteRenderer spriteRenderer;
-    private Movement movement;
-    private Scene scene;
+    public Movement_MP movement;
 
     private void Awake()
     {
-        scene = SceneManager.GetActiveScene();
         spriteRenderer = GetComponent<SpriteRenderer>();
-        movement = GetComponentInParent<Movement>();
     }
     private void Start()
     {
@@ -31,18 +27,15 @@ public class GhostEyes_MP : MonoBehaviour
     }
     private void Update()
     {
-        if (scene.name == "GAMEOVER_LV1") spriteRenderer.sprite = left;
+        if (movement.direction == Vector2.up)
+            ChangeSprite(up);
+        else if (movement.direction == Vector2.down)
+            ChangeSprite(down);
+        else if (movement.direction == Vector2.left)
+            ChangeSprite(left);
         else
-        {
-            if (movement.direction == Vector2.up)
-                ChangeSprite(up);
-            else if (movement.direction == Vector2.down)
-                ChangeSprite(down);
-            else if (movement.direction == Vector2.left)
-                ChangeSprite(left);
-            else
-                ChangeSprite(right);
-        }
+            ChangeSprite(right);
+
     }
 
     //[PunRPC]

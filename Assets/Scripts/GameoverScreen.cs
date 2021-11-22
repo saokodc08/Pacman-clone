@@ -6,15 +6,17 @@ using UnityEngine.UI;
 
 public class GameoverScreen : MonoBehaviour
 {
-    public Text scoreTxt;
-    public Text highTxt;
+    public Text score;
     public Animator fadeAnimator;
+    public Result result;
 
     // Start is called before the first frame update
     void Start()
     {
-        //score.text = "";
+        result = Result.instance;
+        score.text = "SCORE:"+ result.score;
         //highTxt.text = HandleHightFile.ReadString();
+
     }
 
 

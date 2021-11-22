@@ -14,7 +14,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     [SerializeField] TMP_InputField joinRoomNameInputField;
     [SerializeField] TMP_Text joinErrorText;
-
+    [SerializeField] TMP_Text startGameErrorText;
     [SerializeField] GameObject playerListPrefab;
     [SerializeField] Transform playerListContent;
     [SerializeField] GameObject playButton;
@@ -24,6 +24,7 @@ public class Launcher : MonoBehaviourPunCallbacks
     // Start is called before the first frame update
     void Start()
     {
+        SetLoadingtext(true);
         Play();
     }
 
@@ -43,10 +44,29 @@ public class Launcher : MonoBehaviourPunCallbacks
     {
         if (!PhotonNetwork.IsConnected)
         {
-            SetLoadingtext(true);
             Debug.Log("Connecting to master");
             PhotonNetwork.ConnectUsingSettings();
 
+        }
+        else if (PhotonNetwork.InRoom && PhotonNetwork.IsMasterClient)
+        {
+            SetLoadingtext(false);
+            mainPanel.SetActive(false);
+            joinRoomPanel.SetActive(false);
+            inRoomPanel.SetActive(true);
+            roomNameText.text = "Room:" + PhotonNetwork.CurrentRoom.Name;
+            Player[] players = PhotonNetwork.PlayerList;
+            int playersAmount = players.Count();
+            Debug.Log("Player amount = " + playersAmount);
+            string defaultNickname = PhotonNetwork.NickName;
+            for (int i = 0; i < playersAmount - 1; i++)
+            {
+                Instantiate(playerListPrefab, playerListContent).GetComponent<PlayerListItem>().Setup(players[i]);
+                Debug.Log(i + " player instantiate");
+            }
+            Instantiate(playerListPrefab, playerListContent).GetComponent<PlayerListItem>().Setup(players[playersAmount - 1]);
+            Debug.Log(playersAmount - 1 + " player instantiate");
+            SetPlayButton();
         }
     }
 
@@ -61,8 +81,30 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public void OnClickPlayButton()
     {
-        SetLoadingtext(true);
-        PhotonNetwork.LoadLevel("MP");
+        int num = CheckCharacter();
+        if (num == 1)
+        {
+            SetLoadingtext(true);
+            PhotonNetwork.LoadLevel("MP");
+        }
+        else if (num == 0 )
+        {
+            startGameErrorText.text = "Someone has to be Ghost..";
+        }
+        else
+        {
+            startGameErrorText.text = "You can't play Pacman without Pacman!";
+        }
+    }
+    private int CheckCharacter()
+    {
+        int num = 0;
+        foreach (Player player in PhotonNetwork.PlayerList)
+        {
+            if (player.CustomProperties["playerAvatar"] != null)
+                num += (int)player.CustomProperties["playerAvatar"];
+        }
+        return num;
     }
 
     public void CreateRoom()
@@ -105,6 +147,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public override void OnJoinedRoom()
     {
+        Debug.Log("Join room old");
         SetLoadingtext(false);
         mainPanel.SetActive(false);
         joinRoomPanel.SetActive(false);
@@ -191,6 +234,8 @@ public class Launcher : MonoBehaviourPunCallbacks
         SetLoadingtext(false);
         if (returnCode == 32758)
             joinErrorText.text = "Can't find room named '" + joinRoomNameInputField.text + "'";
+        else if (returnCode == 32765)
+            joinErrorText.text = "Room full";
         else
             joinErrorText.text = message;
         joinRoomNameInputField.text = "";
@@ -200,6 +245,7 @@ public class Launcher : MonoBehaviourPunCallbacks
 
     public void LeaveRoom()
     {
+        startGameErrorText.text = "";
         SetLoadingtext(true);
         PhotonNetwork.LeaveRoom();
     }

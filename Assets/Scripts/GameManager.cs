@@ -23,9 +23,16 @@ public class GameManager : MonoBehaviour
     private float defaultFixedDeltaTime = 0.02f;
     public int score { get; private set; }
     public int lives { get; private set; }
+    public GameObject PauseMenu;
+
+    private bool isPaused = false;
+    private bool confirmQuit = false;
+    [SerializeField] GameObject confirmBox;
+    public Result result;
 
     private void Start()
     {
+        result = Result.instance;
         CameraShaker.Instance.ShakeOnce(2f, 2f, 2f, 3f);
         Invoke(nameof(NewGame), 3f);
     }
@@ -33,16 +40,15 @@ public class GameManager : MonoBehaviour
 
     private void Update()
     {
-
-/*        if (lives<=0 && Input.anyKeyDown && pacman.isAcceptingInput)
-        {
-            //NewGame();
-            ChangeOverScene();
-        }*/
+        
         if(!_behaviourChanged && curPellets <= numberOfPelletToChangeBlinky)
         {
             ChangeBlinky(true);
             _behaviourChanged = true;
+        }
+        if(Input.GetKeyDown(KeyCode.Escape))
+        {
+            PauseGame();
         }
     }
 
@@ -116,6 +122,7 @@ public class GameManager : MonoBehaviour
             ghosts[i].gameObject.SetActive(false);
         }
         pacman.gameObject.SetActive(false);*/
+        result.score = score;
         StartCoroutine(SlowMotionSequence());
         Invoke(nameof(FadeIn), 2f);
         Invoke(nameof(ChangeOverScene), 3f);
@@ -160,11 +167,11 @@ public class GameManager : MonoBehaviour
         SetScore(score + pallet.points);
         if(!HasRemainingPallets())
         {
-            StartCoroutine(SlowMotionSequence());
+            //StartCoroutine(SlowMotionSequence());
             CameraShaker.Instance.ShakeOnce(3f, 3f, 0.1f, 1f);
             pacman.PacmanWin();
             pacman.gameObject.SetActive(false);
-            Invoke(nameof(NewGame), 3.0f);
+            GameOver();
         }
     }
 
@@ -214,7 +221,7 @@ public class GameManager : MonoBehaviour
     {
         Time.timeScale = slowMotionScale;
         Time.fixedDeltaTime = defaultFixedDeltaTime * Time.timeScale;
-        yield return new WaitForSecondsRealtime(1);
+        yield return new WaitForSeconds(0.25f);
         Time.timeScale = 1;
         Time.fixedDeltaTime = defaultFixedDeltaTime;
     }
@@ -223,5 +230,45 @@ public class GameManager : MonoBehaviour
     public void ChangeOverScene()
     {
         SceneManager.LoadScene("GAMEOVER_LV1");
-    }    
+    } 
+
+    private void ChangeHomeScene()
+    {
+        SceneManager.LoadScene("TitleScreen");
+    }
+    
+    public void PauseGame()
+    {
+        if(!isPaused)
+        {
+            isPaused = true;
+            pacman.isAcceptingInput = false;
+            PauseMenu.SetActive(true);
+            Time.timeScale = 0;
+        }
+        else
+        {
+            confirmBox.SetActive(false);
+            confirmQuit = false;
+            isPaused = false;
+            pacman.isAcceptingInput = true;
+            PauseMenu.SetActive(false);
+            Time.timeScale = 1;
+        }
+    }
+
+    public void QuitGame()
+    {
+        if(!confirmQuit)
+        {
+            confirmBox.SetActive(true);
+            confirmQuit = true;
+        }
+        else
+        {
+            Time.timeScale = 1;
+            FadeIn();
+            Invoke(nameof(ChangeHomeScene), 1f);
+        }
+    }
 }
